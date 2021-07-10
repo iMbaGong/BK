@@ -71,13 +71,10 @@ namespace BookingRoom.Controllers
         [ResponseType(typeof(UserDto))]
         public IHttpActionResult Login(User src_user)
         {
-            IQueryable<User> res = GetUsers(src_user.user_name);
+            IQueryable<User> res = GetUsersByName(src_user.user_name);
             if (res.Count() != 1)
                 return NotFound();
             User res_user = res.First();
-
-            if (res_user == null)
-                return NotFound();
 
             if (res_user.password != src_user.password)
             {
@@ -85,7 +82,7 @@ namespace BookingRoom.Controllers
             }
             else
             {
-                return Ok(ToDto(res_user));
+                return Ok(new UserDto(res_user));
             }
         }
 
@@ -99,7 +96,7 @@ namespace BookingRoom.Controllers
                 //TODO：实名认证API
             }
 
-            IQueryable<User> res = GetUsers(src_user.user_name);
+            IQueryable<User> res = GetUsersByName(src_user.user_name);
             if (res.Count() != 1)
                 return NotFound();
             User res_user = res.First();
@@ -118,13 +115,11 @@ namespace BookingRoom.Controllers
             if (src_user.Admin == null)
                 return BadRequest();
 
-            IQueryable<User> res = GetUsers(src_user.user_name);
+            IQueryable<User> res = GetUsersByName(src_user.user_name);
             if (res.Count() != 1)
                 return NotFound();
             User res_user = res.First();
 
-            if (res_user == null)
-                return NotFound();
             if(src_user.Admin.invite_code == INVITE_CODE)
             {
                 if (res_user.Admin == null)
@@ -146,13 +141,11 @@ namespace BookingRoom.Controllers
         [HttpGet]
         public IHttpActionResult NewLandlord(string user_name)
         {
-            IQueryable<User> res = GetUsers(user_name);
+            IQueryable<User> res = GetUsersByName(user_name);
             if (res.Count() != 1)
                 return NotFound();
             User res_user = res.First();
 
-            if (res_user == null)
-                return NotFound();
             if (res_user.Customer.customer_realname == null || res_user.Customer.customer_identity == null)
                 return StatusCode(HttpStatusCode.Forbidden);
             if (res_user.Customer.Landlord != null)
@@ -167,8 +160,19 @@ namespace BookingRoom.Controllers
             return Ok();
         }
 
+        [Route("{user_name}")]
+        [ResponseType(typeof(UserDto))]
+        public IHttpActionResult GetUsers(string user_name)
+        {
+            IQueryable<User> res = GetUsersByName(user_name);
+            if (res.Count() != 1)
+                return NotFound();
+            User res_user = res.First();
+
+            return Ok(new UserDto(res_user));
+        }
         // DELETE: api/Users/5
-        [ResponseType(typeof(User))]
+        [ResponseType(typeof(UserDto))]
         public IHttpActionResult DeleteUser(decimal id)
         {
             User user = db.User.Find(id);
@@ -180,7 +184,7 @@ namespace BookingRoom.Controllers
             db.User.Remove(user);
             db.SaveChanges();
 
-            return Ok(user);
+            return Ok(new UserDto(user));
         }
 
         protected override void Dispose(bool disposing)
@@ -196,48 +200,10 @@ namespace BookingRoom.Controllers
         {
             return db.User.Count(e => e.user_name == username) > 0;
         }
+        
 
         [NonAction]
-        public UserDto ToDto(User user)
-        {
-            UserDto dto = new UserDto
-            {
-                user_id = (int)user.user_id,
-                user_name = user.user_name
-            };
-            if (user.Admin != null)
-            {
-                dto.Admin = new UserDto.AdminDto
-                {
-                    invite_code = user.Admin.invite_code
-                };
-            }
-            dto.Customer = new UserDto.CustomerDto
-            {
-                customer_email = user.Customer.customer_email,
-                customer_phone = user.Customer.customer_phone,
-                customer_identity = user.Customer.customer_identity,
-                customer_realname = user.Customer.customer_realname,
-                customer_gender = user.Customer.customer_gender
-            };
-            dto.Customer.Tenant = new UserDto.CustomerDto.TenantDto
-            {
-                tenant_credit = user.Customer.Tenant.tenant_credit
-            };
-            if (user.Customer.Landlord != null)
-            {
-                dto.Customer.Landlord = new UserDto.CustomerDto.LandlordDto
-                {
-                    landlord_credit = user.Customer.Landlord.landlord_credit,
-                    landlord_status = user.Customer.Landlord.landlord_status
-                };
-            }
-
-            return dto;
-        }
-
-        [NonAction]
-        public IQueryable<User> GetUsers(string kw)
+        public IQueryable<User> GetUsersByName(string kw)
         {
             return db.User
                 .Where(u => u.user_name == kw ||

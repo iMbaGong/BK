@@ -168,11 +168,17 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\SampleDirection.cs" />
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
+    <Compile Include="Controllers\HomestaysController.cs" />
     <Compile Include="Controllers\UsersController.cs" />
     <Compile Include="Dto\AdminDto.cs" />
+    <Compile Include="Dto\CustomerDto.cs" />
+    <Compile Include="Dto\HomestayDto.cs" />
     <Compile Include="Dto\LandlordDto.cs" />
+    <Compile Include="Dto\RoomDto.cs" />
+    <Compile Include="Dto\SingleRoomDto.cs" />
     <Compile Include="Dto\TenantDto.cs" />
     <Compile Include="Dto\UserDto.cs" />
+    <Compile Include="Dto\WholeRoomDto.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
