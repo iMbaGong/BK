@@ -286,8 +286,8 @@ namespace BookingRoom.Models
                 .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<Tenant>()
-                .HasMany(e => e.Homestay)
-                .WithMany(e => e.Tenant)
+                .HasMany(e => e.Favorite)
+                .WithMany(e => e.FavoriteBy)
                 .Map(m => m.ToTable("Favourite", "C##BK").MapLeftKey("tenant_id").MapRightKey("homestay_id"));
 
             modelBuilder.Entity<User>()

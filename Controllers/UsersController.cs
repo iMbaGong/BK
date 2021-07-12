@@ -202,8 +202,7 @@ namespace BookingRoom.Controllers
         }
         
 
-        [NonAction]
-        public IQueryable<User> GetUsersByName(string kw)
+        private IQueryable<User> GetUsersByName(string kw)
         {
             return db.User
                 .Where(u => u.user_name == kw ||

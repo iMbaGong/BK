@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using BookingRoom.Models
+using BookingRoom.Models;
 
 namespace BookingRoom.Dto
 {
@@ -24,11 +24,13 @@ namespace BookingRoom.Dto
             bathtub = homestay.bathtub;
             grade = homestay.grade;
             bed_number = homestay.bed_number;
+            favorite_num = homestay.FavoriteBy.Count();
+
             if (homestay.WholeRoom != null)
             {
                 WholeRoom = new WholeRoomDto(homestay.WholeRoom);
             }
-            if (homestay.SingleRoom != null)
+            if (homestay.SingleRoom.Count>0)
             {
                 SingleRoom = new SingleRoomDto(homestay.SingleRoom.First());
             }
@@ -61,6 +63,8 @@ namespace BookingRoom.Dto
         public decimal? bed_number { get; set; }
 
         public decimal? grade { get; set; }
+
+        public decimal? favorite_num { get; set; }
 
         public UserDto Landlord { get; set; }
 

@@ -13,7 +13,7 @@ namespace BookingRoom.Models
         public Tenant()
         {
             Order = new HashSet<Order>();
-            Homestay = new HashSet<Homestay>();
+            Favorite = new HashSet<Homestay>();
         }
 
         [Key]
@@ -27,6 +27,6 @@ namespace BookingRoom.Models
         public virtual ICollection<Order> Order { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Homestay> Homestay { get; set; }
+        public virtual ICollection<Homestay> Favorite { get; set; }
     }
 }
