@@ -10,6 +10,9 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using BookingRoom.Models;
 using BookingRoom.Dto;
+using Newtonsoft.Json;
+using BookingRoom.Util;
+using System.Web;
 
 namespace BookingRoom.Controllers
 {
@@ -30,15 +33,19 @@ namespace BookingRoom.Controllers
             {
                 return BadRequest(ModelState);
             }
+            if (UserExists(user.user_name))
+            {
+                return Conflict();
+            }
             //验证邀请码
             if (user.Admin != null&& user.Admin.invite_code != INVITE_CODE)
             {
                 return StatusCode(HttpStatusCode.Forbidden);
             }
             //注册为客户与租客
-            if (user.Customer == null)
+            if (user.Customer == null||user.Customer.customer_email==null)
             {
-                user.Customer = new Customer();
+                return BadRequest();
             }
             user.Customer.Tenant = new Tenant
             {
@@ -46,46 +53,67 @@ namespace BookingRoom.Controllers
             };
             //设置主键自增
             user.user_id = db.Database.SqlQuery<decimal>("SELECT USER_ID_SEQ.NEXTVAL FROM dual").First();
-            db.User.Add(user);
 
-            try
-            {
-                db.SaveChanges();
-            }
-            catch (DbUpdateException)
-            {
-                if (UserExists(user.user_name))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            string user_str = JsonConvert.SerializeObject(user).Replace("\r\n", "");
+            byte[] user_byte = System.Text.Encoding.Default.GetBytes(user_str);
+            string user_final = "http://47.93.255.191:2021/api/users/varify/email?para="+Convert.ToBase64String(user_byte);
+            string dst_email = user.Customer.customer_email;
+            Email.SendEmail(dst_email, user_final);
             return Ok();
+        }
+
+       [HttpGet]
+       [Route("varify/email")]
+       public string VarifyEmail(string para)
+        {
+            byte[] user_byte = Convert.FromBase64String(para);
+            string json_str = System.Text.Encoding.Default.GetString(user_byte);
+            User user = JsonConvert.DeserializeObject<User>(json_str);
+
+            db.User.Add(user);
+            db.SaveChanges();
+
+            return "验证成功";
+        }
+
+        [HttpGet]
+        [Route("varify/token")]
+        public IHttpActionResult VarifyToken()
+        {
+            string token = HttpContext.Current.Request.Headers["Authorization"];
+            switch (JwtHelp.GetJwtDecode(token))
+            {
+                case "OK":
+                    return Ok();
+                default:
+                    return Unauthorized();
+            }
         }
 
         [Route("login")]
         [HttpPost]
         [ResponseType(typeof(UserDto))]
-        public IHttpActionResult Login(User src_user)
+        public HttpResponseMessage Login(User src_user)
         {
             IQueryable<User> res = GetUsersByName(src_user.user_name);
             if (res.Count() != 1)
-                return NotFound();
-            User res_user = res.First();
+                return new HttpResponseMessage(HttpStatusCode.NotFound);
 
+            User res_user = res.First();
+            
             if (res_user.password != src_user.password)
             {
-                return StatusCode(HttpStatusCode.Forbidden);
+                return new HttpResponseMessage(HttpStatusCode.Forbidden);
             }
             else
             {
-                return Ok(new UserDto(res_user));
+                HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.OK, new UserDto(res_user));
+                response.Headers.Add("token", JwtHelp.SetJwtEncode(res_user.user_name));
+                return response;
             }
         }
 
+        
         [Route("realname")]
         [HttpPost]
         public IHttpActionResult RealnameValidate(User src_user)
@@ -171,6 +199,57 @@ namespace BookingRoom.Controllers
 
             return Ok(new UserDto(res_user));
         }
+
+        [HttpPost]
+        [Route("credit/{user_name}/{credit}")]
+        public IHttpActionResult SetTenantCredit(string user_name,decimal credit)
+        {
+            IQueryable<User> res = GetUsersByName(user_name);
+            if (res.Count() != 1)
+                return NotFound();
+            User res_user = res.First();
+
+            res_user.Customer.Tenant.tenant_credit = credit;
+            db.SaveChanges();
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("update/landlord")]
+        public IHttpActionResult UpdateLandlord(Landlord landlord)
+        {
+            if (db.Landlord.Count(e => e.landlord_id == landlord.landlord_id) == 0)
+                return NotFound();
+            db.Entry(landlord).State= EntityState.Modified;
+            db.SaveChanges();
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("update")]
+        public IHttpActionResult Update(User user)
+        {
+            if (db.User.Count(e => e.user_id == user.user_id) == 0)
+                return NotFound();
+            db.Entry(user).State = EntityState.Modified;
+            db.SaveChanges();
+            return Ok();
+        }
+
+        [HttpGet]
+        [Route("all/admin")]
+        [ResponseType(typeof(List<UserDto>))]
+        public IHttpActionResult GetAllAdmin()
+        {
+            var dtos = new List<UserDto>();
+            foreach(var admin in db.Admin)
+            {
+                dtos.Add(new UserDto(admin.User));
+            }
+            return Ok(dtos);
+        }
+
+
         // DELETE: api/Users/5
         [ResponseType(typeof(UserDto))]
         public IHttpActionResult DeleteUser(decimal id)

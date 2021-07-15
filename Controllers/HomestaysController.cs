@@ -19,6 +19,19 @@ namespace BookingRoom.Controllers
     {
         private OracleDbContext db = new OracleDbContext();
 
+        [HttpGet]
+        [Route("{homestay_id}")]
+        [ResponseType(typeof(HomestayDto))]
+        public IHttpActionResult GetHomestays(decimal homestay_id)
+        {
+            if (db.Homestay.Count(e => e.homestay_id == homestay_id) == 0)
+            {
+                return NotFound();
+            }
+
+            return Ok(new HomestayDto(db.Homestay.Find(homestay_id)));
+        }
+
 
         [HttpPost]
         [Route("add")]
@@ -48,7 +61,6 @@ namespace BookingRoom.Controllers
             homestay.homestay_id = db.Database.SqlQuery<decimal>("SELECT HOMESTAY_ID_SEQ.NEXTVAL FROM dual").First();
             if (homestay.WholeRoom != null)
             {
-                
                 foreach(var room in homestay.WholeRoom.Room)
                 {
                     //为每个Room设置主键
@@ -71,9 +83,9 @@ namespace BookingRoom.Controllers
 
 
         [HttpGet]
-        [Route("all/{page_count}/{page_num}/{order:string='grade'}")]
+        [Route("all/{page_count}/{page_num}/{order}")]
         [ResponseType(typeof(List<HomestayDto>))]
-        public IHttpActionResult GetHomestays(int page_count,int page_num,string order)
+        public IHttpActionResult GetHomestays(int page_count,int page_num,string order="grade")
         {
             //获取一页内容
             var homestays = GetPageContent(page_count, page_num, order);
@@ -86,10 +98,26 @@ namespace BookingRoom.Controllers
             return Ok(dtos);
         }
 
-        [HttpPost]
-        [Route("filter/{page_count}/{page_num}/{order:string='grade'}")]
+        [HttpGet]
+        [Route("all/{order}")]
         [ResponseType(typeof(List<HomestayDto>))]
-        public IHttpActionResult HomestaysFilter(HomestayFilter filter, int page_count, int page_num,string order)
+        public IHttpActionResult GetHomestays(string order = "grade")
+        {
+            //获取一页内容
+            var homestays = GetAllContent(order);
+            //转成DTO
+            var dtos = new List<HomestayDto>();
+            foreach (var homestay in homestays)
+            {
+                dtos.Add(new HomestayDto(homestay));
+            }
+            return Ok(dtos);
+        }
+
+        [HttpPost]
+        [Route("filter/{page_count}/{page_num}/{order}")]
+        [ResponseType(typeof(List<HomestayDto>))]
+        public IHttpActionResult HomestaysFilter(HomestayFilter filter, int page_count, int page_num,string order="grade")
         {
             IQueryable<Homestay> res = db.Homestay;
 
@@ -121,7 +149,7 @@ namespace BookingRoom.Controllers
 
             if (filter.bathtub != null)
                 res = res.Where(h => h.bathtub == filter.bathtub);
-
+            
             if (filter.type != null)
             {
                 if (filter.type == 0)
@@ -138,6 +166,86 @@ namespace BookingRoom.Controllers
 
             var homestays = GetPageContent(page_count, page_num, order);
              
+            var dtos = new List<HomestayDto>();
+            foreach (var homestay in homestays)
+            {
+                dtos.Add(new HomestayDto(homestay));
+            }
+            return Ok(dtos);
+        }
+
+        [HttpPost]
+        [Route("filter/{order}")]
+        [ResponseType(typeof(List<HomestayDto>))]
+        public IHttpActionResult HomestaysFilter(HomestayFilter filter, string order = "grade")
+        {
+            IQueryable<Homestay> res = db.Homestay;
+
+            if (filter.price_max != null)
+                res = res.Where(h => h.homestay_price <= filter.price_max);
+            if (filter.price_min != null)
+                res = res.Where(h => h.homestay_price >= filter.price_min);
+
+            if (filter.cap_max != null)
+                res = res.Where(h => h.homestay_cap <= filter.cap_max);
+            if (filter.cap_min != null)
+                res = res.Where(h => h.homestay_cap >= filter.cap_min);
+
+            if (filter.area_max != null)
+                res = res.Where(h => h.homestay_area <= filter.area_max);
+            if (filter.area_min != null)
+                res = res.Where(h => h.homestay_area >= filter.area_min);
+
+            if (filter.bed_max != null)
+                res = res.Where(h => h.bed_number <= filter.bed_max);
+            if (filter.bed_min != null)
+                res = res.Where(h => h.bed_number >= filter.bed_min);
+
+            if (filter.by_the_street != null)
+                res = res.Where(h => h.by_the_street == filter.by_the_street);
+
+            if (filter.wifi != null)
+                res = res.Where(h => h.wifi == filter.wifi);
+
+            if (filter.bathtub != null)
+                res = res.Where(h => h.bathtub == filter.bathtub);
+
+            if (filter.type != null)
+            {
+                if (filter.type == 0)
+                {
+                    res = res.Where(h => h.WholeRoom != null);
+                    if (filter.room_max != null)
+                        res = res.Where(h => h.WholeRoom.room_num < filter.room_max);
+                    if (filter.room_min != null)
+                        res = res.Where(h => h.WholeRoom.room_num > filter.room_min);
+                }
+                else
+                    res = res.Where(h => h.SingleRoom.Count >= 0);
+            }
+
+            if (filter.start_time != null)
+            {
+                var hs = new List<Homestay>();
+                foreach(var tmp in db.Order.Where(e => e.start_time < filter.start_time))
+                {
+                    hs.Add(tmp.Homestay);
+                }
+                res = res.Except(hs);
+            }
+
+            if (filter.expire_time != null)
+            {
+                var hs = new List<Homestay>();
+                foreach (var tmp in db.Order.Where(e => e.expire_time > filter.expire_time))
+                {
+                    hs.Add(tmp.Homestay);
+                }
+                res = res.Except(hs);
+            }
+
+            var homestays = GetAllContent(order);
+
             var dtos = new List<HomestayDto>();
             foreach (var homestay in homestays)
             {
@@ -164,6 +272,23 @@ namespace BookingRoom.Controllers
         }
 
         [HttpGet]
+        [Route("bylandlord/{user_name}")]
+        [ResponseType(typeof(List<HomestayDto>))]
+        public IHttpActionResult GetByLandlord(string user_name)
+        {
+            if (GetUsersByName(user_name).Count() == 0)
+                return NotFound();
+            User landlord = GetUsersByName(user_name).First();
+
+            var dtos = new List<HomestayDto>();
+            foreach (var homestay in landlord.Customer.Landlord.Homestay.OrderBy(h => -h.grade))
+            {
+                dtos.Add(new HomestayDto(homestay));
+            }
+            return Ok(dtos);
+        }
+
+        [HttpPost]
         [Route("update")]
         public IHttpActionResult UpdateHomestay(Homestay homestay)
         {
@@ -183,6 +308,24 @@ namespace BookingRoom.Controllers
             return Ok();
         }
 
+        [HttpPost]
+        [Route("changestatus/{homestay_id}/{status}")]
+        public IHttpActionResult ChangeHomestayStatus(decimal homestay_id,decimal status)
+        {
+            
+            if (!HomestayExists(homestay_id))
+            {
+                return BadRequest();
+            }
+            var homestay = db.Homestay.Find(homestay_id);
+            homestay.homestay_status = status;
+            db.Entry(homestay).State = EntityState.Modified;
+            db.SaveChanges();
+
+            return Ok();
+        }
+
+
         [HttpGet]
         [Route("addfavor/{user_name}/{homestay_id}")]
         public IHttpActionResult AddFavor(string user_name,int homestay_id)
@@ -191,6 +334,19 @@ namespace BookingRoom.Controllers
                 return NotFound();
             User user = GetUsersByName(user_name).First();
             user.Customer.Tenant.Favorite.Add(db.Homestay.Find(homestay_id));
+            db.Entry(user).State = EntityState.Modified;
+            db.SaveChanges();
+            return Ok();
+        }
+
+        [HttpGet]
+        [Route("delfavor/{user_name}/{homestay_id}")]
+        public IHttpActionResult DelFavor(string user_name, int homestay_id)
+        {
+            if (GetUsersByName(user_name).Count() == 0 || !HomestayExists(homestay_id))
+                return NotFound();
+            User user = GetUsersByName(user_name).First();
+            user.Customer.Tenant.Favorite.Remove(db.Homestay.Find(homestay_id));
             db.Entry(user).State = EntityState.Modified;
             db.SaveChanges();
             return Ok();
@@ -209,6 +365,23 @@ namespace BookingRoom.Controllers
             {
                 dtos.Add(new HomestayDto(homestay));
             }
+            return Ok(dtos);
+        }
+
+        [HttpGet]
+        [Route("favor/{user_name}")]
+        public IHttpActionResult GetFavour(string user_name)
+        {
+            if (GetUsersByName(user_name).Count() == 0)
+                return NotFound();
+            User user = GetUsersByName(user_name).First();
+
+            var dtos = new List<HomestayDto>();
+            foreach (var homestay in user.Customer.Tenant.Favorite.OrderBy(h => -h.grade))
+            {
+                dtos.Add(new HomestayDto(homestay));
+            }
+
             return Ok(dtos);
         }
 
@@ -278,6 +451,37 @@ namespace BookingRoom.Controllers
                     break;
             }
             return res.Skip((page_count - 1) * page_num).Take(page_num);
+
+        }
+
+        private IQueryable<Homestay> GetAllContent(string order)
+        {
+            IQueryable<Homestay> res = db.Homestay;
+            switch (order)
+            {
+                case "price":
+                    res = res.OrderBy(h => -h.homestay_price);
+                    break;
+                case "PRICE":
+                    res = res.OrderBy(h => h.homestay_price);
+                    break;
+                case "grade":
+                    res = res.OrderBy(h => -h.grade);
+                    break;
+                case "Grade":
+                    res = res.OrderBy(h => h.grade);
+                    break;
+                case "favorite":
+                    res = res.OrderBy(h => -h.FavoriteBy.Count());
+                    break;
+                case "FAVORITE":
+                    res = res.OrderBy(h => h.FavoriteBy.Count());
+                    break;
+                default:
+                    res = res.OrderBy(h => -h.grade);
+                    break;
+            }
+            return res;
 
         }
     }

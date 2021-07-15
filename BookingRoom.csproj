@@ -51,7 +51,19 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
+    <Reference Include="JWT, Version=8.0.0.0, Culture=neutral, PublicKeyToken=6f98bca0f40f2ecf, processorArchitecture=MSIL">
+      <HintPath>packages\JWT.8.2.2\lib\net46\JWT.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.IdentityModel.JsonWebTokens, Version=6.11.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.IdentityModel.JsonWebTokens.6.11.1\lib\net472\Microsoft.IdentityModel.JsonWebTokens.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.IdentityModel.Logging, Version=6.11.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.IdentityModel.Logging.6.11.1\lib\net472\Microsoft.IdentityModel.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.IdentityModel.Tokens, Version=6.11.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.IdentityModel.Tokens.6.11.1\lib\net472\Microsoft.IdentityModel.Tokens.dll</HintPath>
+    </Reference>
     <Reference Include="Oracle.ManagedDataAccess, Version=4.122.19.1, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
       <HintPath>packages\Oracle.ManagedDataAccess.19.7.0\lib\net40\Oracle.ManagedDataAccess.dll</HintPath>
     </Reference>
@@ -61,12 +73,21 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IdentityModel.Tokens.Jwt, Version=6.11.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\System.IdentityModel.Tokens.Jwt.6.11.1\lib\net472\System.IdentityModel.Tokens.Jwt.dll</HintPath>
+    </Reference>
     <Reference Include="System.Security" />
+    <Reference Include="System.Web.Cors, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.AspNet.Cors.5.2.7\lib\net45\System.Web.Cors.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Web.Http.Cors, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.AspNet.WebApi.Cors.5.2.7\lib\net45\System.Web.Http.Cors.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Abstractions" />
@@ -168,14 +189,20 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\SampleDirection.cs" />
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
+    <Compile Include="Controllers\CommentsController.cs" />
     <Compile Include="Controllers\HomestaysController.cs" />
+    <Compile Include="Controllers\OrdersController.cs" />
+    <Compile Include="Controllers\SessionsController.cs" />
     <Compile Include="Controllers\UsersController.cs" />
     <Compile Include="Data\HomestayFilter.cs" />
     <Compile Include="Dto\AdminDto.cs" />
+    <Compile Include="Dto\CommentDto.cs" />
     <Compile Include="Dto\CustomerDto.cs" />
     <Compile Include="Dto\HomestayDto.cs" />
     <Compile Include="Dto\LandlordDto.cs" />
+    <Compile Include="Dto\OrderDto.cs" />
     <Compile Include="Dto\RoomDto.cs" />
+    <Compile Include="Dto\SessionDto.cs" />
     <Compile Include="Dto\SingleRoomDto.cs" />
     <Compile Include="Dto\TenantDto.cs" />
     <Compile Include="Dto\UserDto.cs" />
@@ -198,6 +225,8 @@
     <Compile Include="Models\User.cs" />
     <Compile Include="Models\WholeRoom.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Util\Email.cs" />
+    <Compile Include="Util\JwtHelp.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Areas\HelpPage\HelpPage.css" />

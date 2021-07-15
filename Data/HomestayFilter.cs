@@ -28,5 +28,9 @@ namespace BookingRoom.Data
 
         public decimal? room_max { get; set; }
         public decimal? room_min { get; set; }
+
+        public DateTime? start_time { get; set; }
+
+        public DateTime? expire_time { get; set; }
     }
 }

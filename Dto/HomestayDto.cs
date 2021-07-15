@@ -35,6 +35,13 @@ namespace BookingRoom.Dto
                 SingleRoom = new SingleRoomDto(homestay.SingleRoom.First());
             }
 
+            Comment = new List<CommentDto>();
+            foreach (var order in homestay.Order)
+            {
+                if(order.Comment!=null)
+                    Comment.Add(new CommentDto(order.Comment));
+            }
+
         }
         public decimal homestay_id { get; set; }
 
@@ -72,7 +79,7 @@ namespace BookingRoom.Dto
 
         public SingleRoomDto SingleRoom { get; set; }
 
-        
+        public List<CommentDto> Comment { get; set; }
 
     }
 }

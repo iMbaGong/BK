@@ -9,13 +9,9 @@ namespace BookingRoom.Models
     [Table("C##BK.Session")]
     public partial class Session
     {
-        [Key]
-        [Column(Order = 0)]
         public decimal sender_id { get; set; }
 
-        [Key]
-        [Column(Order = 1)]
-        public decimal reciever_id { get; set; }
+        public decimal receiver_id { get; set; }
 
         public DateTime create_time { get; set; }
 
@@ -24,8 +20,14 @@ namespace BookingRoom.Models
 
         public decimal session_status { get; set; }
 
-        public virtual User User { get; set; }
+        [Key]
+        public decimal session_id { get; set; }
 
-        public virtual User User1 { get; set; }
+        [StringLength(30)]
+        public string session_type { get; set; }
+
+        public virtual User Sender { get; set; }
+
+        public virtual User Receiver { get; set; }
     }
 }

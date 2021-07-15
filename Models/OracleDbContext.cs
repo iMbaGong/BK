@@ -249,7 +249,7 @@ namespace BookingRoom.Models
                 .HasPrecision(38, 0);
 
             modelBuilder.Entity<Session>()
-                .Property(e => e.reciever_id)
+                .Property(e => e.receiver_id)
                 .HasPrecision(38, 0);
 
             modelBuilder.Entity<Session>()
@@ -258,6 +258,14 @@ namespace BookingRoom.Models
 
             modelBuilder.Entity<Session>()
                 .Property(e => e.session_status)
+                .HasPrecision(38, 0);
+
+            modelBuilder.Entity<Session>()
+                .Property(e => e.session_type)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<Session>()
+                .Property(e => e.session_id)
                 .HasPrecision(38, 0);
 
             modelBuilder.Entity<SingleRoom>()
@@ -314,14 +322,14 @@ namespace BookingRoom.Models
 
             modelBuilder.Entity<User>()
                 .HasMany(e => e.SessionSend)
-                .WithRequired(e => e.User)
+                .WithRequired(e => e.Sender)
                 .HasForeignKey(e => e.sender_id)
                 .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<User>()
                 .HasMany(e => e.SessionRecv)
-                .WithRequired(e => e.User1)
-                .HasForeignKey(e => e.reciever_id)
+                .WithRequired(e => e.Receiver)
+                .HasForeignKey(e => e.receiver_id)
                 .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<WholeRoom>()
