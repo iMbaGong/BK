@@ -62,18 +62,16 @@ namespace BookingRoom.Util
                 IJwtDecoder decoder = new JwtDecoder(serializer, urlEncoder);
                 //token为之前生成的字符串
                 var userInfo = decoder.DecodeToObject(token,secret,false);
+                var now = provider.GetNow();
+                var unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                //过期时间
+                var secondsSinceEpoch = Math.Round((now - unixEpoch).TotalSeconds);
+                if (secondsSinceEpoch > (double)userInfo["exp"])
+                    return "EXPIRE";
                 //此处json为IDictionary<string, object> 类型
                 //string username = userInfo["username"].ToString();  //可获取当前用户名
                 return "OK";
 
-            }
-            catch (TokenExpiredException)
-            {
-                //Console.WriteLine("Token has expired");
-            }
-            catch (SignatureVerificationException)
-            {
-                //Console.WriteLine("Token has invalid signature");
             }
             catch (Exception)
             {

@@ -18,6 +18,29 @@ namespace BookingRoom.Controllers
     {
         private OracleDbContext db = new OracleDbContext();
 
+        [Route("aval/{homestay_id}")]
+        [HttpGet]
+        [ResponseType(typeof(Dictionary<string, bool>))]
+        public IHttpActionResult GetAvalDate(decimal homestay_id)
+        {
+            var homestay = db.Homestay.Find(homestay_id);
+            if (homestay == null)
+                return NotFound();
+            var dict = new Dictionary<string, bool>();
+            var start = DateTime.Today.AddDays( -(int)DateTime.Today.DayOfWeek);
+            var end = start.AddDays(28);
+            foreach(var order in homestay.Order)
+            {
+                if (order.paying_status == 0)
+                    break;
+                for(var i = order.start_time; i <= order.expire_time; i = i.AddDays(1))
+                {
+                    dict[i.ToString("yyyy-MM-dd")] = false;
+                }
+            }
+            return Ok(dict);
+        }
+
         [Route("add")]
         [HttpPost]
         public IHttpActionResult AddOrder(Order order)

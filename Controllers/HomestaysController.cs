@@ -99,15 +99,13 @@ namespace BookingRoom.Controllers
         }
 
         [HttpGet]
-        [Route("all/{order}")]
+        [Route("all")]
         [ResponseType(typeof(List<HomestayDto>))]
-        public IHttpActionResult GetHomestays(string order = "grade")
+        public IHttpActionResult GetHomestays()
         {
-            //获取一页内容
-            var homestays = GetAllContent(order);
             //转成DTO
             var dtos = new List<HomestayDto>();
-            foreach (var homestay in homestays)
+            foreach (var homestay in db.Homestay)
             {
                 dtos.Add(new HomestayDto(homestay));
             }
@@ -175,9 +173,9 @@ namespace BookingRoom.Controllers
         }
 
         [HttpPost]
-        [Route("filter/{order}")]
+        [Route("filter")]
         [ResponseType(typeof(List<HomestayDto>))]
-        public IHttpActionResult HomestaysFilter(HomestayFilter filter, string order = "grade")
+        public IHttpActionResult HomestaysFilter(HomestayFilter filter)
         {
             IQueryable<Homestay> res = db.Homestay;
 
@@ -224,34 +222,36 @@ namespace BookingRoom.Controllers
                     res = res.Where(h => h.SingleRoom.Count >= 0);
             }
 
-            if (filter.start_time != null)
+            if (filter.start_time != null&& filter.expire_time != null)
             {
                 var hs = new List<Homestay>();
-                foreach(var tmp in db.Order.Where(e => e.start_time < filter.start_time))
+                foreach(var tmp in db.Order.Where(e => e.start_time < filter.start_time || e.expire_time > filter.expire_time))
                 {
                     hs.Add(tmp.Homestay);
                 }
-                res = res.Except(hs);
-            }
+                var final = res.Where(delegate(Homestay homestay){
+                    foreach(var h in hs)
+                    {
+                        if (homestay.homestay_id == h.homestay_id)
+                            return false;
+                    }
+                    return true;
+                });
 
-            if (filter.expire_time != null)
-            {
-                var hs = new List<Homestay>();
-                foreach (var tmp in db.Order.Where(e => e.expire_time > filter.expire_time))
+                var dtos = new List<HomestayDto>();
+                foreach (var homestay in res)
                 {
-                    hs.Add(tmp.Homestay);
+                    dtos.Add(new HomestayDto(homestay));
                 }
-                res = res.Except(hs);
+                return Ok(dtos);
             }
 
-            var homestays = GetAllContent(order);
-
-            var dtos = new List<HomestayDto>();
-            foreach (var homestay in homestays)
+            var dtoss = new List<HomestayDto>();
+            foreach (var homestay in res)
             {
-                dtos.Add(new HomestayDto(homestay));
+                dtoss.Add(new HomestayDto(homestay));
             }
-            return Ok(dtos);
+            return Ok(dtoss);
         }
 
         [HttpGet]
@@ -386,6 +386,8 @@ namespace BookingRoom.Controllers
         }
 
         // DELETE: api/Homestays/5
+        [HttpGet]
+        [Route("del/{id}")]
         [ResponseType(typeof(Homestay))]
         public IHttpActionResult DeleteHomestay(decimal id)
         {

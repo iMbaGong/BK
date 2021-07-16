@@ -36,7 +36,7 @@ namespace BookingRoom.Models
 
         public decimal? homestay_area { get; set; }
 
-        [StringLength(255)]
+        [StringLength(500)]
         public string homestay_info { get; set; }
 
         public decimal? homestay_price { get; set; }
@@ -65,5 +65,7 @@ namespace BookingRoom.Models
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Tenant> FavoriteBy { get; set; }
+
     }
 }
+

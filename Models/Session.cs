@@ -23,7 +23,6 @@ namespace BookingRoom.Models
         [Key]
         public decimal session_id { get; set; }
 
-        [StringLength(30)]
         public string session_type { get; set; }
 
         public virtual User Sender { get; set; }

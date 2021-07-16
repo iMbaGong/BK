@@ -10,6 +10,7 @@ namespace BookingRoom.Dto
     {
         public HomestayDto(Homestay homestay)
         {
+            homestay_id = homestay.homestay_id;
             homestay_name = homestay.homestay_name;
             Landlord = new UserDto(homestay.Landlord.Customer.User);
             homestay_pic = homestay.homestay_pic;

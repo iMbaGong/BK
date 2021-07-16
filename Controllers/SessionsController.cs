@@ -51,9 +51,9 @@ namespace BookingRoom.Controllers
         }
 
         [HttpGet]
-        [Route("recv/{user_name}/{status}")]
+        [Route("recv/{user_name}")]
         [ResponseType(typeof(List<SessionDto>))]
-        public IHttpActionResult GetSession(string user_name, decimal status)
+        public IHttpActionResult GetSendSession(string user_name)
         {
             if (GetUsersByName(user_name).Count() == 0)
                 return NotFound();
@@ -61,16 +61,7 @@ namespace BookingRoom.Controllers
             var dtos = new List<SessionDto>();
             foreach(var session in GetUsersByName(user_name).First().SessionRecv)
             {
-
-                if (status == 1)
-                {
-                    dtos.Add(new SessionDto(session));
-                }
-                else if (session.session_status == status)
-                {
-                    dtos.Add(new SessionDto(session));
-                }
-                    
+                dtos.Add(new SessionDto(session));    
             }
 
             return Ok(dtos);
@@ -79,7 +70,7 @@ namespace BookingRoom.Controllers
         [HttpGet]
         [Route("send/{user_name}")]
         [ResponseType(typeof(List<SessionDto>))]
-        public IHttpActionResult GetSession(string user_name)
+        public IHttpActionResult GetRecvSession(string user_name)
         {
             if (GetUsersByName(user_name).Count() == 0)
                 return NotFound();
@@ -93,7 +84,7 @@ namespace BookingRoom.Controllers
             return Ok(dtos);
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("readed/{session_id}")]
         public IHttpActionResult ReadedSession(decimal session_id)
         {

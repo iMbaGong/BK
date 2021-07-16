@@ -256,6 +256,7 @@ namespace BookingRoom.Models
                 .Property(e => e.session_detail)
                 .IsUnicode(false);
 
+
             modelBuilder.Entity<Session>()
                 .Property(e => e.session_status)
                 .HasPrecision(38, 0);

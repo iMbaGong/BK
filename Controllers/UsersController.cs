@@ -77,7 +77,7 @@ namespace BookingRoom.Controllers
         }
 
         [HttpGet]
-        [Route("varify/token")]
+        [Route("verify/token")]
         public IHttpActionResult VarifyToken()
         {
             string token = HttpContext.Current.Request.Headers["Authorization"];
@@ -108,6 +108,7 @@ namespace BookingRoom.Controllers
             else
             {
                 HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.OK, new UserDto(res_user));
+                response.Headers.Add("Access-Control-Expose-Headers", "token");
                 response.Headers.Add("token", JwtHelp.SetJwtEncode(res_user.user_name));
                 return response;
             }
@@ -200,7 +201,7 @@ namespace BookingRoom.Controllers
             return Ok(new UserDto(res_user));
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("credit/{user_name}/{credit}")]
         public IHttpActionResult SetTenantCredit(string user_name,decimal credit)
         {
@@ -230,8 +231,13 @@ namespace BookingRoom.Controllers
         public IHttpActionResult Update(User user)
         {
             if (db.User.Count(e => e.user_id == user.user_id) == 0)
-                return NotFound();
-            db.Entry(user).State = EntityState.Modified;
+                    return NotFound();
+            if(db.User.Count(e => e.user_name== user.user_name) != 1)
+                return Conflict();
+            User res_user = db.User.Find(user.user_id);
+            res_user.user_name = user.user_name;
+            res_user.Customer.customer_phone = user.Customer.customer_phone;
+            res_user.Customer.customer_email = user.Customer.customer_email;
             db.SaveChanges();
             return Ok();
         }
@@ -245,6 +251,19 @@ namespace BookingRoom.Controllers
             foreach(var admin in db.Admin)
             {
                 dtos.Add(new UserDto(admin.User));
+            }
+            return Ok(dtos);
+        }
+
+        [HttpGet]
+        [Route("all")]
+        [ResponseType(typeof(List<UserDto>))]
+        public IHttpActionResult GetAllUser()
+        {
+            var dtos = new List<UserDto>();
+            foreach (var user in db.User)
+            {
+                dtos.Add(new UserDto(user));
             }
             return Ok(dtos);
         }

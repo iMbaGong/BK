@@ -11,7 +11,8 @@ namespace BookingRoom.Dto
         public SessionDto(Session session)
         {
             session_id = session.session_id;
-            session_status = session_status;
+            session_status = session.session_status;
+            session_type = session.session_type;
             create_time = session.create_time;
             session_detail = session.session_detail;
             Sender = new UserDto(session.Sender);
